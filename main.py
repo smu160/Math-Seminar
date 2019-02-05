@@ -1,13 +1,11 @@
 """
- Pygame base template for opening a window
+Demo of configuation spaces and robot arm linkages for
+Elementary Applied Topology, Spring 2019
 
- Sample Python/Pygame Programs
- Simpson College Computer Science
- http://programarcadegames.com/
- http://simpson.edu/computer-science/
-
- Explanation video: http://youtu.be/vRB_983kUMc
+@authors Saveliy Yusufov and Kohtaro Yamakawa
 """
+
+import math
 
 import pygame
 
@@ -21,7 +19,10 @@ RED = (255, 0, 0)
 pygame.init()
 
 # Set the width and height of the screen [width, height]
-size = (700, 500)
+WIDTH = 800
+HEIGHT = 600
+
+size = (WIDTH, HEIGHT)
 screen = pygame.display.set_mode(size)
 
 pygame.display.set_caption("My Game")
@@ -32,7 +33,15 @@ done = False
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
-# -------- Main Program Loop -----------
+ANGLE = 0
+THETA = math.radians(ANGLE)
+RADIUS = 30
+START_X = (WIDTH // 2)
+START_Y = (HEIGHT // 2)
+linkage = {"start": [START_X, START_Y], "end": [500*math.cos(THETA), 400*math.sin(THETA)]}
+
+
+# Main game loop
 while not done:
 
     # Main event loop
@@ -52,6 +61,17 @@ while not done:
     screen.fill(WHITE)
 
     # Drawing code should go here
+    pygame.draw.circle(screen, BLACK, (WIDTH//2, HEIGHT//2), RADIUS)
+    pygame.draw.line(screen, GREEN, linkage["start"], linkage["end"], 10)
+
+    if ANGLE == 360:
+        ANGLE = 0
+    else:
+        ANGLE += 1
+
+    THETA = math.radians(ANGLE)
+    linkage["end"] = [START_X + 2*RADIUS*math.cos(THETA), START_Y+2*RADIUS*math.sin(THETA)]
+    print(linkage)
 
     # Update the screen with what we've drawn.
     pygame.display.flip()
