@@ -5,9 +5,12 @@ Elementary Applied Topology, Spring 2019
 @authors Saveliy Yusufov and Kohtaro Yamakawa
 """
 
-import math
+import json
+import queue
 
 import pygame
+from robot import Robot
+from network import Server
 
 
 # Define some colors
@@ -16,68 +19,72 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
-pygame.init()
+# Set the height and width constants
+WIDTH = 600
+HEIGHT = 400
 
-# Set the width and height of the screen [width, height]
-WIDTH = 800
-HEIGHT = 600
+if __name__ == "__main__":
+    pygame.init()
 
-size = (WIDTH, HEIGHT)
-screen = pygame.display.set_mode(size)
+    # Set the width and height of the screen [width, height]
+    size = (WIDTH, HEIGHT)
+    screen = pygame.display.set_mode(size)
 
-pygame.display.set_caption("My Game")
+    pygame.display.set_caption("Configuration Space Visualization Tool")
 
-# Loop until the user clicks the close button.
-done = False
+    # Loop until the user clicks the close button.
+    done = False
 
-# Used to manage how fast the screen updates
-clock = pygame.time.Clock()
+    # Used to manage how fast the screen updates
+    clock = pygame.time.Clock()
 
-ANGLE = 0
-THETA = math.radians(ANGLE)
-RADIUS = 30
-START_X = (WIDTH // 2)
-START_Y = (HEIGHT // 2)
-linkage = {"start": [START_X, START_Y], "end": [500*math.cos(THETA), 400*math.sin(THETA)]}
+    data_queue = queue.Queue()
+    _ = Server("localhost", 10000, data_queue)
 
+    ANGLE = 0
+    RADIUS = 30
+    ORIGIN_X = WIDTH // 2
+    ORIGIN_Y = HEIGHT // 2
+    robot = Robot((ORIGIN_X, ORIGIN_Y), RADIUS)
 
-# Main game loop
-while not done:
+    # Main game loop
+    while not done:
 
-    # Main event loop
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
+        # Main event loop
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done = True
 
-    # Game logic
+        # Game logic
+        if ANGLE == 360:
+            ANGLE = 0
+        else:
+            ANGLE += 1
 
-    # Screen-clearing code goes here
+        robot.update_alpha(ANGLE)
+        robot.update_link1_pos()
+        robot.update_link2_pos()
+        current_pos = robot.get_pos()
+        data_queue.put(json.dumps(current_pos))
 
-    # Here, we clear the screen to white. Don't put other drawing commands
-    # above this, or they will be erased with this command.
+        # Screen-clearing code goes here
 
-    # If you want a background image, replace this clear with blit'ing the
-    # background image.
-    screen.fill(WHITE)
+        # Here, we clear the screen to white. Don't put other drawing commands
+        # above this, or they will be erased with this command.
 
-    # Drawing code should go here
-    pygame.draw.circle(screen, BLACK, (WIDTH//2, HEIGHT//2), RADIUS)
-    pygame.draw.line(screen, GREEN, linkage["start"], linkage["end"], 10)
+        # Background image
+        screen.fill(WHITE)
 
-    if ANGLE == 360:
-        ANGLE = 0
-    else:
-        ANGLE += 1
+        # Drawing code should go here
+        robot_base = pygame.draw.circle(screen, BLACK, (ORIGIN_X, ORIGIN_Y), RADIUS)
+        link1 = pygame.draw.line(screen, GREEN, robot.link1.start, robot.link1.end, 10)
+        link2 = pygame.draw.line(screen, RED, robot.link2.start, robot.link2.end, 10)
 
-    THETA = math.radians(ANGLE)
-    linkage["end"] = [START_X + 2*RADIUS*math.cos(THETA), START_Y+2*RADIUS*math.sin(THETA)]
-    print(linkage)
+        # Update the screen with what we've drawn.
+        pygame.display.update([robot_base, link1, link2])
 
-    # Update the screen with what we've drawn.
-    pygame.display.flip()
+        # Limit to 60 frames per second
+        clock.tick(60)
 
-    # Limit to 60 frames per second
-    clock.tick(60)
-
-# Close the window and quit.
-pygame.quit()
+    # Close the window and quit.
+    pygame.quit()
