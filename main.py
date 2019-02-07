@@ -61,25 +61,32 @@ if __name__ == "__main__":
                 done = True
 
         keys = pygame.key.get_pressed()  #checking pressed keys
+        if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+            t = 2
+        else:
+            t = 1
         if keys[pygame.K_LEFT]:
-            ALPHA -= 1
+            ALPHA -= t
         if keys[pygame.K_RIGHT]:
-            ALPHA += 1
+            ALPHA += t
         if keys[pygame.K_UP]:
-            THETA += 1
+            THETA += t
         if keys[pygame.K_DOWN]:
-            THETA -= 1
+            THETA -= t
 
         # Visualization logic
         ALPHA %= 360
         THETA %= 360
+        temp = (ALPHA + THETA) % 360
 
         robot.update_alpha(ALPHA)
-        robot.update_theta(THETA)
+        robot.update_theta(temp)
         robot.update_link1_pos()
         robot.update_link2_pos()
+
+        # Get current configuration and put into the queue
         current_pos = robot.get_pos()
-        data_queue.put(json.dumps(current_pos))
+        data_queue.put(current_pos)
 
         # Screen-clearing code goes here
 

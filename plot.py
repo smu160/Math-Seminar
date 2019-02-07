@@ -23,7 +23,13 @@ class MyWidget(pg.GraphicsWindow):
         self.setLayout(self.mainLayout)
 
         self.plotItem = self.addPlot(title="Configuration Space")
-        self.plotDataItem = self.plotItem.plot([], pen=None, symbolBrush=(255, 0, 0), symbolSize=5, symbolPen=None)
+
+        # Adjust plot to only show [0, 2pi] on both axes
+        self.plotItem.setRange(xRange=[0, 6.3], yRange=[0, 6.3])
+
+        self.plotItem.showGrid(x=True, y=True, alpha=None)
+
+        self.plotDataItem = self.plotItem.plot([], pen=None, symbolBrush=(255, 0, 0), symbolSize=10, symbolPen=None)
 
         self.data_queue = data_queue
 
@@ -47,7 +53,6 @@ class MyWidget(pg.GraphicsWindow):
             return
 
         data = json.loads(data)
-        data = eval(data)
         self.set_data(data)
 
 
@@ -67,6 +72,6 @@ def main():
 if __name__ == "__main__":
 
     # Set white background and black foreground
-    pg.setConfigOption('background', 'w')
-    pg.setConfigOption('foreground', 'k')
+    pg.setConfigOption('background', 'k')
+    pg.setConfigOption('foreground', 'w')
     main()
