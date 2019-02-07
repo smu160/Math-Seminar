@@ -89,9 +89,12 @@ class Robot:
         pos = [length*c_theta, length*s_theta]
         return pos
 
-    def get_pos(self):
-        """Computes the position of the end-point of the second arm linkage"""
+    def compute_xy(self):
         vec_1 = self.get_link1_pos()
         vec_2 = self.get_link2_pos()
         pos = list(map(add, vec_1, vec_2))
         return pos
+
+    def get_pos(self):
+        """Returns the angles of the linkages"""
+        return self.alpha, self.theta

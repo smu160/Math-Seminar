@@ -7,6 +7,7 @@ Elementary Applied Topology, Spring 2019
 
 import json
 import queue
+import subprocess
 
 import pygame
 from robot import Robot
@@ -41,11 +42,15 @@ if __name__ == "__main__":
     data_queue = queue.Queue()
     _ = Server("localhost", 10000, data_queue)
 
-    ANGLE = 0
+    ALPHA = 0
+    THETA = 0
     RADIUS = 30
     ORIGIN_X = WIDTH // 2
     ORIGIN_Y = HEIGHT // 2
     robot = Robot((ORIGIN_X, ORIGIN_Y), RADIUS)
+
+    # Start the scatterplot process
+    subprocess.Popen(["python", "plot.py"])
 
     # Main game loop
     while not done:
@@ -55,13 +60,22 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 done = True
 
-        # Game logic
-        if ANGLE == 360:
-            ANGLE = 0
-        else:
-            ANGLE += 1
+        keys = pygame.key.get_pressed()  #checking pressed keys
+        if keys[pygame.K_LEFT]:
+            ALPHA -= 1
+        if keys[pygame.K_RIGHT]:
+            ALPHA += 1
+        if keys[pygame.K_UP]:
+            THETA += 1
+        if keys[pygame.K_DOWN]:
+            THETA -= 1
 
-        robot.update_alpha(ANGLE)
+        # Visualization logic
+        ALPHA %= 360
+        THETA %= 360
+
+        robot.update_alpha(ALPHA)
+        robot.update_theta(THETA)
         robot.update_link1_pos()
         robot.update_link2_pos()
         current_pos = robot.get_pos()

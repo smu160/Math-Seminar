@@ -6,6 +6,7 @@ Date: 25 January 2019
 """
 
 import os
+import json
 import platform
 import socket
 import threading
@@ -85,10 +86,11 @@ class Server:
 
     def data_sender(self):
         while True:
-            data = "{},".format(self.data_queue.get())
+            data = self.data_queue.get()
+            data = json.dumps(data) + "|"
 
             with futures.ThreadPoolExecutor(max_workers=5) as ex:
-                for client in self.clients:
+                for client in self.clients.copy():
                     ex.submit(self.sendall, client, data.encode())
 
     def sendall(self, client, data):
@@ -143,13 +145,9 @@ class Client:
                 data = self.sock.recv(4096)
                 if data:
                     data = data.decode()
-
-                    for char in data.split(','):
-                        if char:
-                            if char == 'd':
-                                self.data_queue.queue.clear()
-                            else:
-                                self.data_queue.put(char)
+                    for chunk in data.split('|'):
+                        if chunk:
+                            self.data_queue.put(chunk)
         except:
             logger.exception("Closing socket: %s", self.sock)
             self.sock.close()
